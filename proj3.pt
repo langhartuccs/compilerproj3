@@ -1,3 +1,7 @@
+<*
+Alex Langhart
+Project 3
+    *>
 <*=============driver code =============*>
 <input syntax="Cfront.code" parse=CODE.StmtList from="" to=ast/>
 	
@@ -118,12 +122,21 @@ GLOBAL.cfg_edges = Flow#(from, to) :: GLOBAL.cfg_edges;
     ""
 </xform>
 
-<xform BuildCFG__If pars=(if_ast, block_ast, exit)>
+<xform BuildCFG__If pars=(if_ast, block_ast, begin)>
     PRINT("IF");
-    If#(condition) = if_ast;
-    SingleStmt#(body) = block_ast;
-    XFORM.BuildCFG__Goal(ctrl, exit);
-    ""
+    CODE.If#(condition) = if_ast;
+    b_test = new_basicblock(begin::if_ast);
+    
+    body_label= GLOBAL.label_index; <* label for the first basic block of body *>
+    body_next = XFORM.BuildCFG__Goal(block_ast,""); <* lable of the last basic block from loop body *>
+    body_last = new_basicblock(body_next); <* last basic block from loop body*>
+    exit_label = new_label(); <* exit label for the loop*>
+
+    <* new generate cfg edges *>
+    new_flow(b_test, body_label);
+    new_flow(b_test, exit_label);
+    new_flow(body_label, exit_label);
+    exit_label;
 </xform>
 
 <xform BuildCFG__Nest pars=(input,exit)>
